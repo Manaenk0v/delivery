@@ -1,0 +1,140 @@
+// ConsoleApplication1.cpp : This file contains the 'main' function. Program execution begins and ends there.
+//
+
+#include <array>
+#include <iostream>
+using namespace std;
+
+
+
+/*____________________________________________ДАННЫЕ____________________________________________________*/
+
+// Информация о продукте
+struct FMallProductInfo
+{
+    EProductType ProductToOrder;
+    __int32 Num = 1;
+    EIngredientType IngredientsToAdd[];
+};
+
+// Ингредиенты, которые покупатель может добавить к любому продукту
+enum EIngredientType
+{
+    Syrup,
+    Salt,
+    Ketchup,
+    Jalapeno,
+    ChocolateDust,
+};
+
+// Продукты, которые покупатель может заказать
+enum EProductType
+{
+    Drink,
+    Meat,
+    Vegetable,
+    Dessert,
+};
+
+
+
+/*______________________________________________ЛОГИКА____________________________________________________*/
+
+// Запускаем нашу программу
+int main()
+{
+    FacadeManager* facadeManager = new FacadeManager;
+    facadeManager->Init();
+}
+
+// Фасад
+class FacadeManager
+{
+public:
+
+    // Ссылка на строителя
+    BuilderManager* CurBuilderManager;
+
+    void Init()
+    {
+        // 1. Создаем строителя
+        CurBuilderManager = new BuilderManager;
+
+
+        // 2.  Вызываем функцию сборки заказа (запрашиваем у нашего покупателя инфу о товарах). Заполняем массив FMallProductInfo
+        // 2.1 Я не умею запрашивать инпуты от пользователя, поэтому сам заполнил массив
+
+        // Собираем первый заказ
+        FMallProductInfo product1;
+        product1.ProductToOrder = Dessert;
+        product1.Num = 1;
+        product1.IngredientsToAdd[2] = { Salt, Jalapeno};
+
+		// Собираем второй заказ заказ
+		FMallProductInfo product2;
+		product1.ProductToOrder = Drink;
+		product1.Num = 3;
+		product1.IngredientsToAdd[3] = { Syrup, ChocolateDust, Ketchup };
+
+        // Заказы собраны
+        FMallProductInfo requestedProducts[2] = {product1, product2};
+
+
+        // 3. Запускаем сборку заказа. Сохраняем её в массив объектов (товаров)
+        MallProduct* createdProducts = TakeOrder(requestedProducts);
+
+        // 4. Выводим текст о наших товарах
+		for (unsigned int a = 0; a < sizeof(createdProducts); a++)
+		{
+            FMallProductInfo curDescribingProduct = createdProducts[a].Info;
+
+            // Выводим название товара
+            std::cout << curDescribingProduct.ProductToOrder;
+
+            // Выводим ингредиенты
+            for (unsigned int j = 0; j < sizeof(curDescribingProduct.IngredientsToAdd); j++)
+            {
+                std::cout << curDescribingProduct.IngredientsToAdd[j];
+            }
+
+            // Выводим количество
+            std::cout << curDescribingProduct.Num;
+		}
+    }
+
+    // Принимаем заказ
+    MallProduct* TakeOrder(FMallProductInfo productsToOrder[])
+    {
+        MallProduct* createdProducts = new MallProduct[];
+		for (unsigned int a = 0; a < sizeof(productsToOrder); a++)
+		{
+            createdProducts[a] = CurBuilderManager->CreateProduct(productsToOrder[a]);
+		}
+
+        return createdProducts;
+    }
+};
+
+// Строитель
+class BuilderManager
+{
+public:
+
+    // Создаем разные товары (объекты) из одного класса, приняв на вход инфу о продукте
+    MallProduct CreateProduct(FMallProductInfo productInfo)
+    {
+		MallProduct newProduct;
+		newProduct.Info = productInfo;
+        return newProduct;
+    }
+};
+
+// Продукт / товар
+class MallProduct
+{
+public:
+
+    FMallProductInfo Info;
+    // Визуально настраиваем продукт
+    // Делает что-то еще с продуктом
+};
